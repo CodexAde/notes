@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Details</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+
+        .detail-container {
+            /* display: flex; */
+            padding: 2rem;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .image-section {
+            flex: 1;
+        }
+
+        .image-section img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .notes-section {
+            flex: 1;
+    background: #1f1f1f;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    max-width: 756px;
+    /* align-items: center; */
+    /* align-content: center; */
+    justify-content: center;
+    margin: auto;
+    margin-top: 43px;
+}
+
+
+
+        .notes-section textarea {
+            width: 100%;
+            /* min-height: 300px; */
+            background: #2a2a2a;
+            color: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            resize: vertical;
+        }
+
+        .save-btn {
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+/* widget  */
+
+        .widget-wrapper {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .chatgpt-widget {
+      background: #1f1f1f;
+      padding: 16px;
+      border-radius: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 1500px;
+    }
+
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .top-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+
+    .bottom-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .hamburger-toggle {
+      position: relative;
+      cursor: pointer;
+      /* z-index: 1100; */
+    }
+
+    .hamburger-toggle img {
+      width: 24px;
+      height: 24px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 14px 20px;
+      font-size: 16px;
+      color: #ffffff;
+      background: #2a2a2a;
+      border: none;
+      border-radius: 16px;
+      outline: none;
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+      /* width: 50vw; */
+    }
+
+    input[type="text"]::placeholder {
+      color: #bbb;
+    }
+
+    .ai-label {
+      color: #bbb;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    button {
+        padding: 16px 20px;
+      /* background: linear-gradient(135deg, #2e2e3e, #1e1e2e); */
+      color: white;
+      border: 1px solid #444;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease-in-out;
+    }
+
+    button:hover {
+      transform: scale(1.01) !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .dropdown-menu {
+        position: absolute;
+    top: -208px;
+    left: 38px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+      display: none;
+      min-width: 180px;
+      z-index: 1000;
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .dropdown-item:hover {
+      background: #3e3e4e;
+      border-radius: 12px;
+    }
+
+    .dropdown-item img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+
+    @media (max-width: 480px) {
+      .top-row {
+        flex-wrap: wrap;
+        flex-direction: row;
+      }
+
+      .bottom-row {
+        justify-content: center;
+      }
+
+      button {
+        width: 1px;
+        font-size: 16px;
+      }
+    }
+
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Image Details</h1>
+        <button onclick="window.location.href='pages.html'">Back to Gallery</button>
+    </header>
+
+    <div class="detail-container">
+        <div class="image-section">
+            <img id="displayedImage" src="" alt="Selected Image">
+        </div>
+        <div class="notes-section">
+            <h2>Notes</h2>
+            <textarea id="imageNotes" placeholder="Add your notes here..."></textarea>
+            <button class="save-btn" onclick="saveNotes()">Save Notes</button>
+        </div>
+    </div>
+<!-- widget  -->
+    <div class="widget-wrapper">
+        <div class="chatgpt-widget">
+          <div class="input-section">
+            <div class="top-row">
+              <div class="hamburger-toggle" onclick="toggleDropdown(event)">
+                <img src="https://img.icons8.com/material-outlined/24/FFFFFF/menu--v1.png" alt="Menu" />
+                <div class="dropdown-menu" id="dropdownMenu">
+                  <div class="dropdown-item" onclick="setAI('chatgpt', 'ChatGPT')">
+                    <img src="https://img.icons8.com/fluency/48/chatgpt--v2.png"> ChatGPT
+                  </div>
+                  <div class="dropdown-item" onclick="setAI('perplexity', 'Perplexity')">
+                    <img src="https://img.icons8.com/ios-filled/50/perplexity-ai.png"> Perplexity
+                  </div>
+                  <div class="dropdown-item" onclick="setAI('gemini', 'Google Gemini')">
+                    <img src="https://brandlogos.net/wp-content/uploads/2025/03/gemini_icon-logo_brandlogos.net_bqzeu-512x512.png"> Google Gemini
+                  </div>
+                  <div class="dropdown-item" onclick="setAI('llama', 'Meta AI')">
+                    <img src="https://registry.npmmirror.com/@lobehub/icons-static-png/1.43.0/files/dark/meta-color.png"> Meta AI
+                  </div>
+                  <div class="dropdown-item" onclick="setAI('grok', 'Grok AI')">
+                    <img src="https://img.icons8.com/ios/50/grok.png"> Grok AI
+                  </div>
+                </div>
+              </div>
+    
+              <input style="width: 10vw;" type="text" id="gptInput" placeholder="Ask something..." onkeydown="if(event.key==='Enter'){redirectToAI()}" />
+    
+              <div class="ai-label" id="aiLabel">ChatGPT</div>
+            </div>
+    
+            <div class="bottom-row">
+              <button style="width: 100%; padding: 16px 32px;" onclick="redirectToAI()">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="response-box" id="responseBox"></div>
+
+    <script>
+        let currentImagePath = '';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Get image path from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            currentImagePath = urlParams.get('image');
+            
+            if (currentImagePath) {
+                document.getElementById('displayedImage').src = currentImagePath;
+                
+                // Load existing notes if any
+                try {
+                    const response = await fetch(`http://localhost:3000/get-notes/${encodeURIComponent(currentImagePath)}`);
+                    const data = await response.json();
+                    document.getElementById('imageNotes').value = data.notes;
+                } catch (error) {
+                    console.error('Error loading notes:', error);
+                }
+            }
+        });
+
+        async function saveNotes() {
+            const noteText = document.getElementById('imageNotes').value;
+            
+            try {
+                await fetch('http://localhost:3000/save-notes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        imagePath: currentImagePath,
+                        notes: noteText
+                    })
+                });
+                alert('Notes saved successfully!');
+            } catch (error) {
+                console.error('Error saving notes:', error);
+                alert('Failed to save notes');
+            }
+        }
+
+
+
+// widget script
+let selectedAI = 'chatgpt';
+
+function toggleDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('dropdownMenu');
+  dropdown.classList.toggle('active');
+}
+
+function setAI(ai, label) {
+  selectedAI = ai;
+  document.getElementById('aiLabel').innerText = label;
+  document.getElementById('dropdownMenu').classList.remove('active');
+}
+
+function redirectToAI() {
+  const inputEl = document.getElementById('gptInput');
+  const searchText = inputEl.value.trim();
+
+  // Get image source from displayedImage
+  const imageEl = document.getElementById('displayedImage');
+  const imageUrl = imageEl?.src.trim() || '';
+
+  if (!searchText) return;
+
+  // Combine image URL with user input
+  const fullQuery = imageUrl ? `${imageUrl} ${searchText}` : searchText;
+  const encodedQuery = encodeURIComponent(fullQuery);
+
+  // AI redirect URLs
+  const urls = {
+    chatgpt: `https://chat.openai.com/?q=${encodedQuery}`,
+    gemini: `https://gemini.google.com/?q=${encodedQuery}`,
+    perplexity: `https://www.perplexity.ai/search?q=${encodedQuery}`,
+    llama: `https://www.meta.ai/search?q=${encodedQuery}`,
+    grok: `https://x.com/grok?q=${encodedQuery}`
+  };
+
+  // Open the selected AI with the query
+  window.open(urls[selectedAI] || urls.chatgpt, '_blank');
+}
+
+// Close dropdown on outside click
+window.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('dropdownMenu');
+  if (!document.querySelector('.aiq-ham').contains(e.target)) {
+    dropdown.classList.remove('active');
+  }
+});
+
+
+
+(function() {
+  const hamburgerToggle = document.querySelector('.hamburger-toggle');
+  const dropdownMenu = document.querySelector('#dropdownMenu');
+
+  if (!hamburgerToggle || !dropdownMenu) {
+    console.error("Hamburger toggle or dropdown menu element not found.");
+    return;
+  }
+
+  // Initially hide the dropdown (assuming your CSS handles the initial state)
+  dropdownMenu.style.display = 'none';
+
+  hamburgerToggle.addEventListener('click', function(event) {
+    event.stopPropagation(); // Prevent click on toggle from immediately triggering the document click
+
+    // Toggle the display of the dropdown
+    dropdownMenu.style.display = dropdownMenu.style.display === 'none' ? 'block' : 'none';
+
+    // If the dropdown is shown, add a listener to close it when clicking outside
+    if (dropdownMenu.style.display === 'block') {
+      document.addEventListener('click', function(event) {
+        if (!event.target.closest('.hamburger-toggle') && !event.target.closest('#dropdownMenu')) {
+          dropdownMenu.style.display = 'none';
+          // Remove the event listener after it's executed once
+          document.removeEventListener('click', arguments.callee);
+        }
+      });
+    }
+  });
+})();
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sample Folder</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      /* background-color: #f4f4f4; */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin: 0;
+    }
+
+    #addScreenshotButton {
+      padding: 0.5rem 1rem;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #addScreenshotButton:hover {
+      background-color: #333;
+    }
+
+    .image-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .image-box img {
+      max-width: 100%;
+      /* height: 300px; */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      /* margin-top: 30px; */
+    }
+
+    .notes-section {
+      margin-top: 1rem;
+    }
+
+    .notes-section textarea {
+      width: 100%;
+      height: 112px;
+      margin-bottom: 0.5rem;
+    }
+
+    .save-btn {
+      padding: 0.5rem 1rem;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .save-btn:hover {
+      background-color: #555;
+    }
+
+    
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="folderHeading">Sample Folder</h1>
+    <button id="addScreenshotButton">+ Add</button>
+  </header>
+
+  <div class="image-upload" id="imageUpload">
+    <input type="file" id="imageInput" accept="image/*" style="display:none;">
+    <div id="imageContainer" class="image-container">
+      <!-- Images will be dynamically added here -->
+    </div>
+  </div>
+
+  <script>
+    // Load existing images when the page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      loadImages();
+    });
+
+    async function loadImages() {
+      try {
+        const response = await fetch('http://localhost:3000/images');
+        const data = await response.json();
+        const container = document.getElementById('imageContainer');
+        container.innerHTML = '';
+
+        data.images.forEach(image => {
+          const div = document.createElement('div');
+          div.className = 'image-box';
+          div.innerHTML = `
+            <a href="pages-detail.html?image=${encodeURIComponent(image.path)}">
+              <img src="${image.path}" alt="Uploaded Image">
+            </a>
+        `;
+          container.appendChild(div);
+        });
+      } catch (error) {
+        console.error('Error loading images:', error);
+      }
+    }
+
+    document.getElementById('addScreenshotButton').addEventListener('click', () => {
+      document.getElementById('imageInput').click();
+    });
+
+    document.getElementById('imageInput').addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch('http://localhost:3000/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+        loadImages(); // Reload all images after upload
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
+    });
+
+    async function saveNotes(imagePath) {
+      const textarea = document.querySelector(`textarea[data-image="${imagePath}"]`);
+      const noteText = textarea.value;
+
+      try {
+        await fetch('http://localhost:3000/save-notes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            imagePath,
+            notes: noteText
+          })
+        });
+        alert('Notes saved successfully!');
+      } catch (error) {
+        console.error('Error saving notes:', error);
+        alert('Failed to save notes');
+      }
+    }
+
+    // Drag and drop functionality
+    const imageUpload = document.getElementById('imageUpload');
+    imageUpload.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      imageUpload.style.backgroundColor = '#f0f0f0';
+    });
+
+    imageUpload.addEventListener('dragleave', () => {
+      imageUpload.style.backgroundColor = 'transparent';
+    });
+
+    imageUpload.addEventListener('drop', (e) => {
+      e.preventDefault();
+      imageUpload.style.backgroundColor = 'transparent';
+      const files = e.dataTransfer.files;
+      const container = document.getElementById('imageContainer');
+
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const div = document.createElement('div');
+          div.className = 'image-box';
+          div.innerHTML = `<img src="${e.target.result}" alt="Uploaded Image">`;
+          container.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  </script>
+</body>
+</html>
